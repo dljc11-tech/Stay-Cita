@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Run It</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=UnifrakturMaguntia&family=VT323&display=swap');
+
+:root {
+  --rot: #1a1a0a;
+  --pale: #c8c4b0;
+  --ink: #2a1f0e;
+  --blood: #b31919;
+  --green: #1a2a0a;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #000;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor {
+  position: fixed;
+  width: 20px; height: 20px;
+  border: 1.5px solid rgba(200,196,176,0.6);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width 0.1s, height 0.1s, background 0.2s;
+  mix-blend-mode: difference;
+}
+#cursor-dot {
+  position: fixed;
+  width: 4px; height: 4px;
+  background: #c8c4b0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+}
+
+/* ── FILM GRAIN ── */
+#grain {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 800;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grainAnim 0.15s steps(1) infinite;
+}
+@keyframes grainAnim {
+  0%   { transform: translate(0,0); }
+  10%  { transform: translate(-2%,-3%); }
+  20%  { transform: translate(3%, 2%); }
+  30%  { transform: translate(-1%, 4%); }
+  40%  { transform: translate(2%,-1%); }
+  50%  { transform: translate(-3%, 1%); }
+  60%  { transform: translate(1%, 3%); }
+  70%  { transform: translate(-2%, 2%); }
+  80%  { transform: translate(3%,-2%); }
+  90%  { transform: translate(-1%,-1%); }
+  100% { transform: translate(2%, 3%); }
+}
+
+/* ── VIGNETTE & FLICKER ── */
+#vignette {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.95) 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+#flicker {
+  position: fixed; inset: 0;
+  background: rgba(200,196,176,0.03);
+  pointer-events: none;
+  z-index: 15;
+  animation: flick 0.08s steps(1) infinite;
+}
+@keyframes flick {
+  0%,100% { opacity: 1; }
+  45%     { opacity: 0.85; }
+  50%     { opacity: 1; }
+  55%     { opacity: 0.9; }
+  70%     { opacity: 0.95; }
+}
+
+/* ── MAIN SCENE ── */
+#scene {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  z-index: 5;
+  position: relative;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(50,20,20,0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 40%, rgba(20,20,40,0.7) 0%, transparent 50%),
+    #0a0a05;
+}
+
+/* ── PAPER TEXTURE ── */
+#paper {
+  position: relative;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(40,30,15,0.08) 30px, rgba(40,30,15,0.08) 31px),
+    linear-gradient(135deg, #1c1710 0%, #12100a 50%, #181410 100%);
+  border: 1px solid rgba(200,180,120,0.15);
+  box-shadow:
+    0 0 60px rgba(0,0,0,0.9),
+    inset 0 0 40px rgba(0,0,0,0.5),
+    0 0 3px rgba(255,100,100,0.15);
+  padding: 40px 50px;
+  max-width: 650px;
+  width: 90vw;
+  text-align: center;
+}
+#paper::before {
+  content: '';
+  position: absolute; inset: 6px;
+  border: 1px solid rgba(200,180,80,0.06);
+  pointer-events: none;
+}
+
+/* ── TITLE & SUBTITLE ── */
+#main-title {
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  color: #ffcccc;
+  text-shadow: 0 0 20px rgba(255,100,100,0.2), 2px 2px 4px rgba(0,0,0,0.8);
+  margin-bottom: 5px;
+}
+#subtitle {
+  font-family: 'VT323', monospace;
+  font-size: 0.95rem;
+  color: rgba(255,180,180,0.5);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin-bottom: 25px;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,150,150,0.3), transparent);
+  margin: 15px 0;
+}
+
+#body-text {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.95rem;
+  color: rgba(220,215,200,0.85);
+  line-height: 1.8;
+  margin-bottom: 25px;
+  text-align: left;
+  min-height: 75px;
+}
+
+/* ── BUTTON ── */
+#main-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  letter-spacing: 4px;
+  color: rgba(255,200,200,0.9);
+  background: transparent;
+  border: 1px solid rgba(255,150,150,0.4);
+  padding: 10px 35px;
+  cursor: none;
+  transition: all 0.4s;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+#main-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,100,100,0.1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+#main-btn:hover::after { transform: scaleX(1); }
+#main-btn:hover {
+  color: #fff;
+  border-color: rgba(255,150,150,0.9);
+  box-shadow: 0 0 20px rgba(255,100,100,0.3);
+  letter-spacing: 6px;
+}
+
+#status {
+  font-family: 'VT323', monospace;
+  font-size: 0.8rem;
+  color: rgba(255,150,150,0.4);
+  letter-spacing: 3px;
+  margin-top: 20px;
+  min-height: 20px;
+}
+
+/* ── STATIC & WARNING ── */
+#static {
+  position: fixed; inset: 0; z-index: 550; opacity: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay; transition: opacity 0.2s;
+}
+#scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 12;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+}
+#warning {
+  position: fixed; top: 20px; right: 20px; font-family: 'VT323', monospace;
+  font-size: 0.8rem; color: rgba(255,150,150,0.4); letter-spacing: 2px; z-index: 100; text-align: right;
+}
+
+.type-cursor {
+  display: inline-block; width: 2px; height: 1em; background: rgba(255,200,200,0.8);
+  margin-left: 2px; vertical-align: middle; animation: blink 0.7s steps(1) infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── COUNTDOWN STYLES ── */
+.countdown-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0;
+}
+.time-box {
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(255,150,150,0.3); padding: 10px 5px; text-align: center;
+}
+.time-value { font-family: 'VT323', monospace; font-size: 2rem; color: #ffcccc; }
+.time-label { font-family: 'VT323', monospace; font-size: 0.7rem; color: rgba(255,180,180,0.6); letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+<div id="grain"></div>
+<div id="scanlines"></div>
+<div id="vignette"></div>
+<div id="static"></div>
+
+<div id="warning">
+  CANAL: SPECIAL STAY<br>
+  ESTADO: CONECTADO<br>
+  MENSAJE DE: FELIX
+</div>
+
+<div id="scene">
+  <div id="paper">
+    <div id="image-container" style="margin-bottom: 12px; min-height: 130px; display: flex; justify-content: center; align-items: center;">
+      <!-- IMAGEN INICIAL CONFIGURADA DESDE EL INICIO -->
+      <img id="story-img" src="inicio.png" alt="Stray Kids" style="max-height: 150px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 12px rgba(255,150,150,0.3)); opacity: 1; transition: opacity 0.5s ease;"/>
+    </div>
+
+    <div id="main-title">RUN IT</div>
+    <div id="subtitle">Parece que alguien te está llamando, papita...</div>
+    <div class="divider"></div>
+    <div id="body-text">
+      <span id="typed-text"></span><span class="type-cursor" id="tc"></span>
+    </div>
+    <div class="divider"></div>
+    <button id="main-btn" onclick="nextPhase()">[ Yes, Sr ]</button>
+    <div id="status">esperando señal...</div>
+  </div>
+</div>
+
+<!-- ARCHIVOS DE AUDIO -->
+<audio id="bg-audio" loop preload="auto">
+  <source src="skz.mp3" type="audio/mpeg">
+</audio>
+<audio id="voice-audio-1" preload="auto"><source src="audio1.mp3" type="audio/mpeg"></audio>
+<audio id="voice-audio-2" preload="auto"><source src="audio2.mp3" type="audio/mpeg"></audio>
+<audio id="voice-audio-3" preload="auto"><source src="audio3.mp3" type="audio/mpeg"></audio>
+
+<script>
+const cur = document.getElementById('cursor');
+const cdot = document.getElementById('cursor-dot');
+let mx=0, my=0, cx=0, cy=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cdot.style.left=mx+'px'; cdot.style.top=my+'px'; });
+setInterval(() => {
+  cx += (mx-cx)*0.12; cy += (my-cy)*0.12;
+  cur.style.left=cx+'px'; cur.style.top=cy+'px';
+}, 16);
+
+let audioStarted = false;
+function initAudio() {
+  const bgAudio = document.getElementById('bg-audio');
+  if (bgAudio && !audioStarted) {
+    bgAudio.volume = 0.08; // Música de fondo al 8%
+    bgAudio.play().then(() => {
+      audioStarted = true;
+    }).catch(err => console.log("Bg audio error:", err));
+  }
+}
+
+// Función para reproducir los audios de voz al máximo volumen (1.0)
+function playVoice(num) {
+  for(let i=1; i<=3; i++) {
+    const v = document.getElementById('voice-audio-' + i);
+    if(v) { v.pause(); v.currentTime = 0; }
+  }
+  const currentVoice = document.getElementById('voice-audio-' + num);
+  if(currentVoice) {
+    currentVoice.volume = 1.0; // Volumen de la voz al 100%
+    currentVoice.play().catch(err => console.log("Voice audio error:", err));
+  }
+}
+
+let typeInt;
+function typeText(text, cb) {
+  const el=document.getElementById('typed-text');
+  el.textContent='';
+  let i=0;
+  clearInterval(typeInt);
+  typeInt=setInterval(()=>{
+    el.textContent+=text[i++];
+    if(i>=text.length){ clearInterval(typeInt); setTimeout(()=>{document.getElementById('tc').style.display='none'; if(cb)cb();},300); }
+  }, 30);
+}
+
+function showStatic(dur=300) {
+  const s=document.getElementById('static');
+  s.style.opacity='0.25';
+  setTimeout(()=>s.style.opacity='0', dur);
+}
+
+let phase = 0;
+const phases = [
+  {
+    text: "Hey... ¿Estás ahí? Sabía que tarde o temprano sintonizarías esta frecuencia. Hay algo muy importante que tienes que saber hoy.",
+    btn: "[ ¿Qué pasa, Felix? ]",
+    status: "llamada entrante - Seúl",
+    img: "felix.png", // Al dar clic cambia a la de Felix
+    audioIndex: 1, 
+    fx: () => { initAudio(); }
+  },
+  {
+    text: "Los chicos y yo hemos estado preparando algo gigante para el World Tour. Un espacio donde solo existimos nosotros y ustedes, Stay. No sabes lo mucho que me emociona que estés aquí para vivirlo.",
+    btn: "[ Seguir escuchando ]",
+    status: "frecuencia estable",
+    img: "felix.png", 
+    audioIndex: 2, 
+    fx: () => { showStatic(); }
+  },
+  {
+    text: "Alguien especial me dijo que estabas muy emocionada por esto. Prepárate que la función está a punto de iniciar. Después de esto, podemor ir a comer brownies.",
+    btn: "[ Ver conteo :3 ]",
+    status: "acceso concedido",
+    img: "felix.png", 
+    audioIndex: 3, 
+    fx: () => { showStatic(500); }
+  },
+  {
+    text: null, 
+    btn: null,
+    img: null,
+    fx: () => {
+      const imgContainer = document.getElementById('image-container');
+      if(imgContainer) imgContainer.style.display = 'none';
+      showEnding();
+    }
+  }
+];
+
+function nextPhase() {
+  if (phase >= phases.length) return;
+  
+  const p = phases[phase];
+  const btn = document.getElementById('main-btn');
+  const status = document.getElementById('status');
+  const imgElem = document.getElementById('story-img');
+  document.getElementById('tc').style.display = 'inline-block';
+
+  if (p.img && imgElem) {
+    imgElem.style.opacity = '0'; 
+    setTimeout(() => {
+      imgElem.src = p.img;       
+      imgElem.style.opacity = '1'; 
+    }, 200);
+  } else if (imgElem) {
+    imgElem.style.opacity = '0';
+  }
+
+  if (p.audioIndex) {
+    playVoice(p.audioIndex);
+  }
+
+  if (p.text) {
+    btn.style.opacity = '0.3'; 
+    btn.style.pointerEvents = 'none';
+    
+    typeText(p.text, () => { 
+      btn.textContent = p.btn; 
+      btn.style.opacity = '1'; 
+      btn.style.pointerEvents = 'auto'; 
+    });
+  }
+  
+  if (p.status) status.textContent = p.status;
+  if (p.fx) p.fx();
+  
+  phase++;
+}
+
+// ══════════════════════════════════
+//   PANTALLA FINAL CON CUENTA REGRESIVA Y FREEBIES
+// ══════════════════════════════════
+function showEnding() {
+  const scene = document.getElementById('scene');
+  scene.innerHTML = `
+    <div id="paper" style="text-align:center;">
+      <div style="font-family:'UnifrakturMaguntia',cursive;font-size:2.2rem;color:#ffcccc;margin-bottom:8px;">Stray Kids World Tour</div>
+      <div style="font-family:'VT323',monospace;font-size:0.85rem;color:rgba(255,180,180,0.6);letter-spacing:4px;margin-bottom:12px;">CUENTA REGRESIVA PARA LA FUNCIÓN</div>
+      <div class="divider"></div>
+      
+      <p style="font-family:'Special Elite',cursive;color:rgba(220,215,200,0.9);font-size:0.95rem;margin-bottom:15px;line-height:1.7;">
+        Mi amol, el momento ha llegado. Felix ya te dio luz verde y nos toca entrar a ver el world tour. ¿Que dices, vamos juntitas a disfutar el run it? ❤️
+      </p>
+
+      <div class="countdown-grid">
+        <div class="time-box">
+          <div class="time-value" id="days">00</div>
+          <div class="time-label">Días</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="hours">00</div>
+          <div class="time-label">Horas</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="minutes">00</div>
+          <div class="time-label">Min</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="seconds">00</div>
+          <div class="time-label">Seg</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <button onclick="showSecretMessage()" style="font-family:'VT323',monospace;font-size:1.1rem;letter-spacing:3px;color:#ffcccc;background:rgba(255,100,100,0.15);border:1px solid rgba(255,150,150,0.5);padding:10px 20px;cursor:pointer;transition:all 0.4s;margin-top:10px;">[ 🎫 RECLAMAR BOLETO Y REGALITO ]</button>
+    </div>
+  `;
+
+  startCountdown();
+}
+
+// ══════════════════════════════════
+//   PANTALLA DEL MENSAJE OCULTO Y BOLETO
+// ══════════════════════════════════
+function showSecretMessage() {
+  const scene = document.getElementById('scene');
+  scene.innerHTML = `
+    <div id="paper" style="text-align:center;">
+      <div style="font-family:'UnifrakturMaguntia',cursive;font-size:2rem;color:#ffcccc;margin-bottom:8px;">Pase VIP & Freebies Stay</div>
+      <div style="font-family:'VT323',monospace;font-size:0.85rem;color:rgba(255,180,180,0.6);letter-spacing:4px;margin-bottom:15px;">CANJE DE REGALOS EXCLUSIVOS</div>
+      <div class="divider"></div>
+
+      <div style="margin: 20px 0; display: flex; justify-content: center;">
+        <img src="boleto.png" alt="Boleto Personalizado" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 4px; box-shadow: 0 0 15px rgba(255,100,100,0.3); border: 1px solid rgba(255,150,150,0.3);" />
+      </div>
+
+      <p style="font-family:'Special Elite',cursive;color:rgba(220,215,200,0.95);font-size:0.95rem;margin-bottom:20px;line-height:1.8;text-align:left;background:rgba(0,0,0,0.3);padding:15px;border-left:2px solid #ff9999;">
+        ¡Felicidades, mi princesita! Has desbloqueado el acceso total. Como en todo gran concierto, te preparé tus propios <b>freebies, photocards y este boletito personalizado</b> en físico.<br><br>
+        <span style="color:#ff9999;font-weight:bold;">REQUISITO OBLIGATORIO:</span> Para que te entregue tu cajita con los regalitos y las photocards, tienes que darme un besito. Un precio justo, eh, JSJSJS. ❤️
+      </p>
+
+      <div class="divider"></div>
+      <button onclick="location.reload()" style="font-family:'VT323',monospace;font-size:1rem;letter-spacing:3px;color:rgba(255,200,200,0.7);background:transparent;border:1px solid rgba(255,150,150,0.3);padding:8px 20px;cursor:pointer;transition:all 0.4s;margin-top:5px;">[ REPETIR MENSAJITO ]</button>
+    </div>
+  `;
+}
+
+function startCountdown() {
+  const concertDate = new Date(2026, 10, 7, 13, 0, 0).getTime();
+
+  setInterval(() => {
+    const now = new Date().getTime();
+    const distance = concertDate - now;
+
+    if (distance < 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      return;
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    const dElem = document.getElementById('days');
+    const hElem = document.getElementById('hours');
+    const mElem = document.getElementById('minutes');
+    const sElem = document.getElementById('seconds');
+
+    if(dElem) dElem.textContent = String(days).padStart(2, '0');
+    if(hElem) hElem.textContent = String(hours).padStart(2, '0');
+    if(mElem) mElem.textContent = String(minutes).padStart(2, '0');
+    if(sElem) sElem.textContent = String(seconds).padStart(2, '0');
+  }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  typeText('Bienvenida, mi amol. Tienes una transmisión secreta esperando ser abierta... ¿Estás lista?');
+});
+</script>
+</body>
+</html>
