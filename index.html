@@ -255,7 +255,6 @@ html, body {
 <div id="scene">
   <div id="paper">
     <div id="image-container" style="margin-bottom: 12px; min-height: 130px; display: flex; justify-content: center; align-items: center;">
-      <!-- IMAGEN INICIAL CONFIGURADA DESDE EL INICIO -->
       <img id="story-img" src="inicio.png" alt="Stray Kids" style="max-height: 150px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 0 12px rgba(255,150,150,0.3)); opacity: 1; transition: opacity 0.5s ease;"/>
     </div>
 
@@ -270,8 +269,7 @@ html, body {
     <div id="status">esperando señal...</div>
   </div>
 </div>
-
-<!-- ARCHIVOS DE AUDIO -->
+  
 <audio id="bg-audio" loop preload="auto">
   <source src="skz.mp3" type="audio/mpeg">
 </audio>
@@ -293,14 +291,13 @@ let audioStarted = false;
 function initAudio() {
   const bgAudio = document.getElementById('bg-audio');
   if (bgAudio && !audioStarted) {
-    bgAudio.volume = 0.08; // Música de fondo al 8%
+    bgAudio.volume = 0.08;
     bgAudio.play().then(() => {
       audioStarted = true;
     }).catch(err => console.log("Bg audio error:", err));
   }
 }
 
-// Función para reproducir los audios de voz al máximo volumen (1.0)
 function playVoice(num) {
   for(let i=1; i<=3; i++) {
     const v = document.getElementById('voice-audio-' + i);
@@ -308,7 +305,7 @@ function playVoice(num) {
   }
   const currentVoice = document.getElementById('voice-audio-' + num);
   if(currentVoice) {
-    currentVoice.volume = 1.0; // Volumen de la voz al 100%
+    currentVoice.volume = 1.0; 
     currentVoice.play().catch(err => console.log("Voice audio error:", err));
   }
 }
@@ -337,7 +334,7 @@ const phases = [
     text: "Hey... ¿Estás ahí? Sabía que tarde o temprano sintonizarías esta frecuencia. Hay algo muy importante que tienes que saber hoy.",
     btn: "[ ¿Qué pasa, Felix? ]",
     status: "llamada entrante - Seúl",
-    img: "felix.png", // Al dar clic cambia a la de Felix
+    img: "felix.png", 
     audioIndex: 1, 
     fx: () => { initAudio(); }
   },
@@ -409,9 +406,7 @@ function nextPhase() {
   phase++;
 }
 
-// ══════════════════════════════════
 //   PANTALLA FINAL CON CUENTA REGRESIVA Y FREEBIES
-// ══════════════════════════════════
 function showEnding() {
   const scene = document.getElementById('scene');
   scene.innerHTML = `
@@ -452,9 +447,7 @@ function showEnding() {
   startCountdown();
 }
 
-// ══════════════════════════════════
 //   PANTALLA DEL MENSAJE OCULTO Y BOLETO
-// ══════════════════════════════════
 function showSecretMessage() {
   const scene = document.getElementById('scene');
   scene.innerHTML = `
